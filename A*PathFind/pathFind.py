@@ -12,7 +12,6 @@ import os
 #****************************************************************************#
 #                               Class Cell                                   #
 #****************************************************************************#
-
 '''
 Class Cell will hold information on each individual cell in the maze
 Input Parameters: X location, Y location, Boolean reachable if it is a wall or not
@@ -36,7 +35,7 @@ class Cell(object):
 
 
 #****************************************************************************#
-#                              Class AStar4Directions                        #
+#                            Class AStar4Directions                          #
 #****************************************************************************#
 '''
 Class AStar4Directions is the class that solves the maze using the A* search,
@@ -153,11 +152,11 @@ class AStar4Directions(object):
 
 
     '''
-    Function manhattanDistanceHeuristic
+    Function DistanceHeuristic
     Parameters: Cell of current position
     Returns: The manhattan distance (exact value in this case) to the goal from the cell
     '''
-    def manhattanDistanceHeuristic(self, cell):
+    def DistanceHeuristic(self, cell):
         #Manhattan distance is the distance from the current cell to the goal cell
         return abs(cell.x - self.end.x) + abs(cell.y - self.end.y)
 
@@ -195,7 +194,7 @@ class AStar4Directions(object):
         #Add one to Gn because we moved 1 cell in some direction
         neighbour.g = cell.g + 1
         #Get the manhattan distance for the new cell
-        neighbour.h = self.manhattanDistanceHeuristic(neighbour)
+        neighbour.h = self.DistanceHeuristic(neighbour)
         #Calculate its Fn
         neighbour.f = neighbour.h + neighbour.g
         #Set the parent to the current cell
@@ -273,7 +272,7 @@ class AStar4Directions(object):
 
 
 #****************************************************************************#
-#                              Class Greedy4Directions                       #
+#                            Class Greedy4Directions                         #
 #****************************************************************************#
 '''
 Class Greedy4Directions extends AStar4Directions because it uses the exact same method as A*
@@ -294,7 +293,90 @@ class Greedy4Directions(AStar4Directions):
         # We need to keep Gn here because functions in AStar4Directions use it
         neighbour.g = 0
         # Get the manhattan distance for the new cell
-        neighbour.h = self.manhattanDistanceHeuristic(neighbour)
+        neighbour.h = self.DistanceHeuristic(neighbour)
+        # Calculate its Fn
+        neighbour.f = neighbour.h + neighbour.g
+        # Set the parent to the current cell
+        neighbour.parent = cell
+
+
+# ****************************************************************************#
+#                          Class AStar5Directions                             #
+# ****************************************************************************#
+'''
+Class AStar5Directions extends AStar4Directions
+It overrides the DistanceHeuristic function from manhattan to chebyshev, and also
+overrides the findNeighbours function to allow for diagonals
+'''
+class AStar5Directions(AStar4Directions):
+    '''Override Functions'''
+    '''
+        Function DistanceHeuristic
+        Parameters: Cell of current position
+        Returns: The Chebyshev distance (exact value in this case) to the goal from the cell
+        '''
+    def DistanceHeuristic(self, cell):
+        # Chebyshev distance looks at all possible neighbours and takes max so we overestimate
+        return max(abs(cell.x - self.end.x),abs(cell.y - self.end.y))
+
+
+    '''
+    Function: findNeighbours
+    Parameters: Cell to find neighbours of
+    Returns: List of all neighbours of the cell
+    '''
+    def findNeighbours(self, cell):
+        # holds the neighbours of the cell
+        neighbours = []
+        # Get the one to the right
+        if cell.x < self.numCols - 1:
+            neighbours.append(self.getCellAtLocation(cell.x + 1, cell.y))
+        # Get the one above
+        if cell.y > 0:
+            neighbours.append(self.getCellAtLocation(cell.x, cell.y - 1))
+        # Get the one to the left
+        if cell.x > 0:
+            neighbours.append(self.getCellAtLocation(cell.x - 1, cell.y))
+        # Get the one below
+        if cell.y < self.numRows - 1:
+            neighbours.append(self.getCellAtLocation(cell.x, cell.y + 1))
+        #Below, right
+        if cell.x < self.numCols -1 and cell.y < self.numRows -1:
+            neighbours.append(self.getCellAtLocation(cell.x+1, cell.y+1))
+        #Above Right
+        if cell.x < self.numCols - 1 and cell.y > 0:
+            neighbours.append(self.getCellAtLocation(cell.x + 1, cell.y - 1))
+        #Above Left
+        if cell.x > 0 and cell.y > 0:
+            neighbours.append(self.getCellAtLocation(cell.x-1, cell.y-1))
+        #Below Left
+        if cell.x > 0 and cell.y < self.numRows-1:
+            neighbours.append(self.getCellAtLocation(cell.x-1, cell.y+1))
+        return neighbours
+
+
+# ****************************************************************************#
+#                          Class Greedy5Directions                            #
+# ****************************************************************************#
+'''
+Class Greedy5Directions extends AStar5Directions, which extends AStar4Directions
+Greedy5Directions overrides the calculateF function, setting Gn to 0 because this
+is not used in greedy searches
+'''
+class Greedy5Directions(AStar5Directions):
+    '''Override functions from AStar5Directions'''
+    '''
+    Function: calculateF
+    Parameters: neighbour cell and current cell
+    Updates the Fn, Gn, Hn values of the neighbour, sets the current cell as the parent
+    '''
+    def calculateF(self, neighbour, cell):
+        # Fn = Gn + Hn
+        # Set Gn to 0 because we are using greedy.
+        # We need to keep Gn here because functions in AStar4Directions use it
+        neighbour.g = 0
+        # Get the manhattan distance for the new cell
+        neighbour.h = self.DistanceHeuristic(neighbour)
         # Calculate its Fn
         neighbour.f = neighbour.h + neighbour.g
         # Set the parent to the current cell
@@ -335,8 +417,12 @@ def readMazeFromFile(filename):
 
     #Check if there is already pathfinding_out.txt and if so, remove it.
     #This allows us to append each maze to the output with ease.
-    if os.path.isfile(filename):
-        os.remove(filename)
+    if filename == "pathfinding_a.txt":
+        if os.path.isfile("pathfinding_a_out.txt"):
+            os.remove("pathfinding_a_out.txt")
+    elif filename == "pathfinding_b.txt":
+        if os.path.isfile("pathfinding_b_out.txt"):
+            os.remove("pathfinding_b_out.txt")
     #return the input read
     return mazes
 
@@ -360,8 +446,8 @@ def writeMazeToFile(numRows, finalPath, alg, filename):
         if alg == "GREEDY":
             f.write("\n")
     #close file
+    print("Ouput saved in "+ filename)
     f.close()
-
 
 
 '''
@@ -408,46 +494,110 @@ def getFinalPathAsList(Grid, pathList):
     return finalPath
 
 
-def main():
-    #Read the maze file
+'''
+Function: partA4Directions:
+partA4Directions() is used for running part A of the assignment using up down left and right.
+'''
+def partA4Directions():
+    # Read the maze file
     mazes = readMazeFromFile('pathfinding_a.txt')
 
-    #Split each maze into its own list
+    # Split each maze into its own list
     mazes = splitIntoSeparateMazes(mazes)
-
-    #Loop through all the mazes in the list of lists
+    count = 1
+    # Loop through all the mazes in the list of lists
     for maze in mazes:
-        #Loop through 2 times, once using A*, the other using Greedy
-        for i in range(0,2):
-            #If i is 0 use A*
+        # Loop through 2 times, once using A*, the other using Greedy
+        for i in range(0, 2):
+            # If i is 0 use A*
             if i == 0:
-                #Create A* object
+                # Create A* object
                 alg = "A*"
                 Grid = AStar4Directions()
-            #I is 1, use Greedy
+            # I is 1, use Greedy
             else:
                 alg = "GREEDY"
                 Grid = Greedy4Directions()
 
-            #print("Using:" + alg + "\n")
+            print("Running Part A, Maze " + str(count) + " with: " + alg)
 
-            #initialize the maze
+            # initialize the maze
             Grid.initMaze(maze)
 
-            #solve the maze
+            # solve the maze
             pathList = Grid.findBestPath()
 
-            #Check if we found a path, if we did, get the updated maze
+            # Check if we found a path, if we did, get the updated maze
             if pathList is not None:
-                #Get the maze with the path added in as 'P'
+                # Get the maze with the path added in as 'P'
                 finalPath = getFinalPathAsList(Grid, pathList)
 
-            #We did not find a path, make it the original maze with no changes
+            # We did not find a path, make it the original maze with no changes
             else:
                 finalPath = maze
 
-            #Write the maze to a file
+            # Write the maze to a file
             writeMazeToFile(Grid.numRows, finalPath, alg, 'pathfinding_a_out.txt')
+        count += 1
+
+
+'''
+Function: partB5Directions:
+partB5Directions() is used for running part B of the assignment using up down left right and diagonal.
+'''
+def partB5Directions():
+    # Read the maze file
+    mazes = readMazeFromFile('pathfinding_b.txt')
+
+    # Split each maze into its own list
+    mazes = splitIntoSeparateMazes(mazes)
+    count = 1
+
+    # Loop through all the mazes in the list of lists
+    for maze in mazes:
+        # Loop through 2 times, once using A*, the other using Greedy
+        for i in range(0, 2):
+            # If i is 0 use A*
+            if i == 0:
+                # Create A* object
+                alg = "A*"
+                Grid = AStar5Directions()
+            # I is 1, use Greedy
+            else:
+                alg = "GREEDY"
+                Grid = Greedy5Directions()
+
+            print("Running Part B, Maze " + str(count) + " with: " + alg)
+
+            # initialize the maze
+            Grid.initMaze(maze)
+
+            # solve the maze
+            pathList = Grid.findBestPath()
+
+            # Check if we found a path, if we did, get the updated maze
+            if pathList is not None:
+                # Get the maze with the path added in as 'P'
+                finalPath = getFinalPathAsList(Grid, pathList)
+
+            # We did not find a path, make it the original maze with no changes
+            else:
+                finalPath = maze
+
+            # Write the maze to a file
+            writeMazeToFile(Grid.numRows, finalPath, alg, 'pathfinding_b_out.txt')
+        count += 1
+
+
+def main():
+    #Runs 'part A.' of the assignment using up down left right
+    print("Running Part A\n")
+    partA4Directions()
+    print("Done Part A\n\n")
+    #RUNS 'part B.' of the assignment using up down left right diagonal
+    print("Running Part B\n")
+    partB5Directions()
+    print("Done Part B\n")
     return
 
 
