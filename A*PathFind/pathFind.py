@@ -7,6 +7,7 @@ Anna Ilina - -
 
 import itertools
 import heapq
+import os
 
 #****************************************************************************#
 #                               Class Cell                                   #
@@ -27,7 +28,6 @@ class Cell(object):
         self.f = 0
 
 
-
 #****************************************************************************#
 #                              Class AStar                                   #
 #****************************************************************************#
@@ -40,12 +40,12 @@ class AStar(object):
         self.numRows = None
         self.numCols = None
 
-    def initMaze(self, rows, cols, walls, start, end):
+    def initMaze(self, cols, rows, walls, start, end):
         self.numRows = rows
         self.numCols = cols
 
-        for i in range(self.numRows):
-            for j in range(self.numCols):
+        for i in range(self.numCols):
+            for j in range(self.numRows):
                 if (i,j) in walls:
                     reachable = False
                 else:
@@ -121,7 +121,7 @@ class AStar(object):
             self.visited.add(cell)
 
             #Check if it is the goal
-            if cell == self.end:
+            if cell is self.end:
                 return self.getPath()
 
             #It was not a goal
@@ -173,7 +173,23 @@ def readMazeFromFile(filename='pathfinding.txt'):
     with open(filename, 'r') as f:
         mazes = f.read().splitlines()
     f.close()
+
+    if os.path.isfile("pathfinding_out.txt"):
+        os.remove("pathfinding_out.txt")
+
     return mazes
+
+
+def writeMazeToFile(numRows, finalPath, filename='pathfinding_out.txt'):
+    with open(filename, 'a') as f:
+        f.write("A*\n")
+        for i in range(numRows):
+            f.writelines(finalPath[i])
+            f.write("\n")
+        f.write("GREEDY\n")
+        f.write("\n")
+
+
 
 '''
 Function: splitIntoSeparateMazes
@@ -228,6 +244,22 @@ def findWalls(maze):
                 walls.append([i,j])
     return walls
 
+def getFinalPathAsList(maze, startPos, endPos, pathList):
+    finalPath = []
+    for i in range(len(maze)):
+        path = []
+        for j in range(len(maze[0])):
+            if [i, j] == startPos:
+                path.append('S')
+            elif [i, j] == endPos:
+                path.append('G')
+            elif (i, j) in pathList:
+                path.append('P')
+            else:
+                path.append(maze[i][j])
+        finalPath.append(path)
+    return finalPath
+
 
 def main():
     mazes = readMazeFromFile()
@@ -247,25 +279,14 @@ def main():
         walls = findWalls(maze)
 
         #initialize the maze
-        Grid.initMaze(numRows, numCols,walls, startPos, endPos)
+        Grid.initMaze(numCols,numRows,walls, startPos, endPos)
 
         #solve the maze
         pathList = Grid.findBestPath()
-        print(pathList)
-        finalPath = []
-        for i in range(numRows):
-            path = []
-            for j in range(numCols):
-                if (i,j) in pathList:
-                    path.append('P')
-                else:
-                    path.append(maze[i][j])
-            finalPath.append(path)
-
+        finalPath = getFinalPathAsList(maze, startPos, endPos, pathList)
+        writeMazeToFile(numRows, finalPath)
         #print the path
-        for i in range(numRows):
-            print(finalPath[i])
-        print("")
+
 
 
 if __name__ == '__main__':
