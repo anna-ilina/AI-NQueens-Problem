@@ -343,23 +343,26 @@ def readMazeFromFile(filename='pathfinding.txt'):
 
 '''
 Function: writeMazeToFile
-Parameters: number of rows, the final solved maze, and a filename default to pathfinding_out.txt
+Parameters: number of rows, the final solved maze, alg used, and a filename default to pathfinding_out.txt
 writeMazeToFile() will write each solved maze to the output file.
 The format is: A* maze, Greedy maze, blank line, repeat until done
 '''
-def writeMazeToFile(numRows, finalPath, filename='pathfinding_out.txt'):
+def writeMazeToFile(numRows, finalPath, alg, filename='pathfinding_out.txt'):
     #open the file for appending
     with open(filename, 'a') as f:
-        #write the A* maze
-        f.write("A*\n")
+        #write the alg used
+        f.write(alg + "\n")
         #prints the maze into the file in proper format
         for i in range(numRows):
             f.writelines(finalPath[i])
             f.write("\n")
-        #Prints the greedy maze
-        f.write("GREEDY\n")
-        #Blank line to separate
-        f.write("\n")
+        #Blank line to separate after Greedy
+        if alg == "GREEDY":
+            f.write("\n")
+    #close file
+    f.close()
+
+
 
 '''
 Function: splitIntoSeparateMazes
@@ -414,28 +417,37 @@ def main():
 
     #Loop through all the mazes in the list of lists
     for maze in mazes:
-        #Create AStar4Directions object
-        #Grid = AStar4Directions()
-        Grid = Greedy4Directions()
+        #Loop through 2 times, once using A*, the other using Greedy
+        for i in range(0,2):
+            #If i is 0 use A*
+            if i == 0:
+                #Create A* object
+                alg = "A*"
+                Grid = AStar4Directions()
+            #I is 1, use Greedy
+            else:
+                alg = "GREEDY"
+                Grid = Greedy4Directions()
 
-        #initialize the maze
-        Grid.initMaze(maze)
+            #print("Using:" + alg + "\n")
 
-        #solve the maze
-        pathList = Grid.findBestPath()
+            #initialize the maze
+            Grid.initMaze(maze)
 
-        #Check if we found a path, if we did, get the updated maze
-        if pathList is not None:
-            #Get the maze with the path added in as 'P'
-            finalPath = getFinalPathAsList(Grid, pathList)
+            #solve the maze
+            pathList = Grid.findBestPath()
 
-        #We did not find a path, make it the original maze with no changes
-        else:
-            finalPath = maze
+            #Check if we found a path, if we did, get the updated maze
+            if pathList is not None:
+                #Get the maze with the path added in as 'P'
+                finalPath = getFinalPathAsList(Grid, pathList)
 
-        #Write the maze to a file
-        writeMazeToFile(Grid.numRows, finalPath)
+            #We did not find a path, make it the original maze with no changes
+            else:
+                finalPath = maze
 
+            #Write the maze to a file
+            writeMazeToFile(Grid.numRows, finalPath, alg)
     return
 
 
