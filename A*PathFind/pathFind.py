@@ -323,7 +323,7 @@ XXXXXXXXXX
 
 These mazes are all read into a list, and returned.
 '''
-def readMazeFromFile(filename='pathfinding.txt'):
+def readMazeFromFile(filename):
     #holds the input
     mazes = [];
     #While the file is open
@@ -335,8 +335,8 @@ def readMazeFromFile(filename='pathfinding.txt'):
 
     #Check if there is already pathfinding_out.txt and if so, remove it.
     #This allows us to append each maze to the output with ease.
-    if os.path.isfile("pathfinding_out.txt"):
-        os.remove("pathfinding_out.txt")
+    if os.path.isfile(filename):
+        os.remove(filename)
     #return the input read
     return mazes
 
@@ -347,7 +347,7 @@ Parameters: number of rows, the final solved maze, alg used, and a filename defa
 writeMazeToFile() will write each solved maze to the output file.
 The format is: A* maze, Greedy maze, blank line, repeat until done
 '''
-def writeMazeToFile(numRows, finalPath, alg, filename='pathfinding_out.txt'):
+def writeMazeToFile(numRows, finalPath, alg, filename):
     #open the file for appending
     with open(filename, 'a') as f:
         #write the alg used
@@ -410,7 +410,7 @@ def getFinalPathAsList(Grid, pathList):
 
 def main():
     #Read the maze file
-    mazes = readMazeFromFile()
+    mazes = readMazeFromFile('pathfinding_a.txt')
 
     #Split each maze into its own list
     mazes = splitIntoSeparateMazes(mazes)
@@ -447,7 +447,7 @@ def main():
                 finalPath = maze
 
             #Write the maze to a file
-            writeMazeToFile(Grid.numRows, finalPath, alg)
+            writeMazeToFile(Grid.numRows, finalPath, alg, 'pathfinding_a_out.txt')
     return
 
 
