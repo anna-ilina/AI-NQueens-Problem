@@ -273,6 +273,35 @@ class AStar4Directions(object):
 
 
 #****************************************************************************#
+#                              Class Greedy4Directions                       #
+#****************************************************************************#
+'''
+Class Greedy4Directions extends AStar4Directions because it uses the exact same method as A*
+The only difference in Greedy is it does not use Gn in the calculation and just looks at the
+heuristic value. This class has 1 override function, calculateF() which simply sets Gn to 0
+'''
+class Greedy4Directions(AStar4Directions):
+    '''Override functions from AStar4Directions'''
+
+    '''
+    Function: calculateF
+    Parameters: neighbour cell and current cell
+    Updates the Fn, Gn, Hn values of the neighbour, sets the current cell as the parent
+    '''
+    def calculateF(self, neighbour, cell):
+        # Fn = Gn + Hn
+        # Set Gn to 0 because we are using greedy.
+        # We need to keep Gn here because functions in AStar4Directions use it
+        neighbour.g = 0
+        # Get the manhattan distance for the new cell
+        neighbour.h = self.manhattanDistanceHeuristic(neighbour)
+        # Calculate its Fn
+        neighbour.f = neighbour.h + neighbour.g
+        # Set the parent to the current cell
+        neighbour.parent = cell
+
+
+#****************************************************************************#
 #                           General Functions                                #
 #****************************************************************************#
 '''
@@ -386,7 +415,8 @@ def main():
     #Loop through all the mazes in the list of lists
     for maze in mazes:
         #Create AStar4Directions object
-        Grid = AStar4Directions()
+        #Grid = AStar4Directions()
+        Grid = Greedy4Directions()
 
         #initialize the maze
         Grid.initMaze(maze)
