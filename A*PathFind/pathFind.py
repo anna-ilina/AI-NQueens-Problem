@@ -12,8 +12,15 @@ import os
 #****************************************************************************#
 #                               Class Cell                                   #
 #****************************************************************************#
+
+'''
+Class Cell will hold information on each individual cell in the maze
+Input Parameters: X location, Y location, Boolean reachable if it is a wall or not
+'''
 class Cell(object):
+    '''Constructor initializes'''
     def __init__(self, x, y, reachable):
+        #Set the location and if it is a wall or not
         self.x = x
         self.y = y
         self.reachable = reachable
@@ -29,43 +36,139 @@ class Cell(object):
 
 
 #****************************************************************************#
-#                              Class AStar                                   #
+#                              Class AStar4Directions                        #
 #****************************************************************************#
-class AStar(object):
+'''
+Class AStar4Directions is the class that solves the maze using the A* search,
+and will only go up, right, down, left.
+'''
+class AStar4Directions(object):
+    ''' Constructor to set the size, holds cells, holds heapq'''
     def __init__(self):
+        #Holds the cells we will go to next
         self.goto = []
+        #Turn goto into a heap queue
         heapq.heapify(self.goto)
+        #Create a set to keep track of what cells we have gone to
         self.visited = set()
+        #Hold a list of cells
         self.cells = []
+        #Set the size of the maze
         self.numRows = None
         self.numCols = None
 
-    def initMaze(self, cols, rows, walls, start, end):
-        self.numRows = rows
-        self.numCols = cols
 
+    '''
+    Function: initMaze
+    Parameters: maze
+    initMaze() will initialize the settings of the maze. It will set the size, get the start and goal positions,
+    find the walls, set each cell to reachable or not, and then add it to the cells list
+    '''
+    def initMaze(self, maze):
+        #Set up the maze
+        self.maze = maze
+        self.numRows = len(maze)
+        self.numCols = len(maze[0])
+
+        #get the start, end, walls
+        self.startPos = self.findStart()
+        self.endPos = self.findEnd()
+        walls = self.findWalls()
+
+        #Loop through, determine if wall or not and set reachable
         for i in range(self.numCols):
             for j in range(self.numRows):
-                if (i,j) in walls:
+                if [i,j] in walls:
                     reachable = False
                 else:
                     reachable = True
+                #add the cell to the cells list
                 self.cells.append(Cell(i,j,reachable))
 
-        self.start = self.getCellAtLocation(start[0], start[1])
-        self.end = self.getCellAtLocation(end[0], end[1])
+        #Convert the start and end positions to the location in the cells list
+        self.start = self.getCellAtLocation(self.startPos[0], self.startPos[1])
+        self.end = self.getCellAtLocation(self.endPos[0], self.endPos[1])
 
+
+    '''
+    Function: findStart
+    Returns: The x and y starting position in the maze
+    '''
+    def findStart(self):
+        #loop through rows and cols
+        for i in range(self.numRows):
+            for j in range(self.numCols):
+                #Check for start position, if true, return it
+                if self.maze[i][j] == 'S' or self.maze[i][j] == 's':
+                    return [i, j]
+
+        #If we get here there is no start position
+        print("Error: Did not find a starting position")
+        return None
+
+
+    '''
+    Function: findEnd
+    Returns: The x and y goal position in the maze
+    '''
+    def findEnd(self):
+        #loop through rows and cols
+        for i in range(self.numRows):
+            for j in range(self.numCols):
+                #check for goal position, if true return
+                if self.maze[i][j] == 'G' or self.maze[i][j] == 'g':
+                    return [i, j]
+        #If we get here there is no goal position
+        print("Error: Did not find a goal position")
+        return None
+
+
+    '''
+    Function: findWalls
+    Returns: The x and y positions of all the walls in the maze
+    '''
+    def findWalls(self):
+        #hold the list of walls
+        walls = []
+        #Loop through rows and cols
+        for i in range(self.numRows):
+            for j in range(self.numCols):
+                #if it is a wall, add it to the wall list
+                if self.maze[i][j] == 'X' or self.maze[i][j] == 'x':
+                    walls.append([i, j])
+        #return the wall positons
+        return walls
+
+
+    '''
+    Function: getCellAtLocation
+    Parameters: Row and col of what cell we want
+    Returns: The cell in the cell list
+    '''
     def getCellAtLocation(self, row, col):
         #returns the cell in the cell list.
         #The location of each row will be the row it is in * the total number of rows
         #We add the column value to get the specific cell
         return self.cells[row*self.numRows + col]
 
+
+    '''
+    Function manhattanDistanceHeuristic
+    Parameters: Cell of current position
+    Returns: The manhattan distance (exact value in this case) to the goal from the cell
+    '''
     def manhattanDistanceHeuristic(self, cell):
         #Manhattan distance is the distance from the current cell to the goal cell
         return abs(cell.x - self.end.x) + abs(cell.y - self.end.y)
 
+
+    '''
+    Function: findNeighbours
+    Parameters: Cell to find neighbours of
+    Returns: List of all neighbours of the cell
+    '''
     def findNeighbours(self,cell):
+        #holds the neighbours of the cell
         neighbours = []
         #Get the one to the right
         if cell.x < self.numCols - 1:
@@ -81,16 +184,30 @@ class AStar(object):
             neighbours.append(self.getCellAtLocation(cell.x, cell.y+1))
         return neighbours
 
+
+    '''
+    Function: calculateF
+    Parameters: neighbour cell and current cell
+    Updates the Fn, Gn, Hn values of the neighbour, sets the current cell as the parent
+    '''
     def calculateF(self, neighbour, cell):
         #Fn = Gn + Hn
-        #cost of path so far
+        #Add one to Gn because we moved 1 cell in some direction
         neighbour.g = cell.g + 1
+        #Get the manhattan distance for the new cell
         neighbour.h = self.manhattanDistanceHeuristic(neighbour)
+        #Calculate its Fn
         neighbour.f = neighbour.h + neighbour.g
-
         #Set the parent to the current cell
         neighbour.parent = cell
 
+
+    '''
+    Function: getPath
+    Returns: The coordinates of the path that the maze took
+    getPath() starts at the goal node and works its way back by looking at the parent cell of the current cell.
+    The parent is added to a path list, and once finished, the list is reversed to make the path go from start->goal
+    '''
     def getPath(self):
         #Start at the end and work back through the parents
         cell = self.end
@@ -108,6 +225,14 @@ class AStar(object):
         path.reverse()
         return path
 
+
+    '''
+    Function: findBestPath
+    Returns: The best path as found by the A* algorithm. Returns none if there is no possible path
+    findBestPath() uses a heapq to push cells onto. This will keep track of the one we should go to next based on
+    the Fn value. We loop while we have things to go to and pop from the queue. We add the cell to the visited, and check
+    if it is a goal. If it is a goal, we can return, otherwise we get the neighbours and push it onto the queue.
+    '''
     def findBestPath(self):
         #start with the start node - add to the goto heap the f value of start and the location
         heapq.heappush(self.goto, (self.start.f, self.start))
@@ -143,7 +268,8 @@ class AStar(object):
                             #If it was not better, calculate the F(node) and push it to our heapq
                             self.calculateF(neighbour, cell)
                             heapq.heappush(self.goto, (neighbour.f, neighbour))
-
+        #we did not find a path
+        return None
 
 
 #****************************************************************************#
@@ -151,7 +277,7 @@ class AStar(object):
 #****************************************************************************#
 '''
 Function: readMazeFromFile
-Arguments: Takes a filename as its argument and will read the data.
+Parameters: Takes a filename as its parameter and will read the data.
 Returns: a list of maze data
 
 This filename will be pathfinding.txt, a file containing N mazes in the form:
@@ -169,124 +295,118 @@ XXXXXXXXXX
 These mazes are all read into a list, and returned.
 '''
 def readMazeFromFile(filename='pathfinding.txt'):
+    #holds the input
     mazes = [];
+    #While the file is open
     with open(filename, 'r') as f:
+        #read the lines
         mazes = f.read().splitlines()
+    #close the file
     f.close()
 
+    #Check if there is already pathfinding_out.txt and if so, remove it.
+    #This allows us to append each maze to the output with ease.
     if os.path.isfile("pathfinding_out.txt"):
         os.remove("pathfinding_out.txt")
-
+    #return the input read
     return mazes
 
 
+'''
+Function: writeMazeToFile
+Parameters: number of rows, the final solved maze, and a filename default to pathfinding_out.txt
+writeMazeToFile() will write each solved maze to the output file.
+The format is: A* maze, Greedy maze, blank line, repeat until done
+'''
 def writeMazeToFile(numRows, finalPath, filename='pathfinding_out.txt'):
+    #open the file for appending
     with open(filename, 'a') as f:
+        #write the A* maze
         f.write("A*\n")
+        #prints the maze into the file in proper format
         for i in range(numRows):
             f.writelines(finalPath[i])
             f.write("\n")
+        #Prints the greedy maze
         f.write("GREEDY\n")
+        #Blank line to separate
         f.write("\n")
-
-
 
 '''
 Function: splitIntoSeparateMazes
-Arguments: - Iterable: A list which contains elements, in this case it is a list of mazes.
+Parameters: - Iterable: A list which contains elements, in this case it is a list of mazes.
            - splitters: The characters that the list will be split on. We set the default
                         to be a space because the text file containing the mazes has a space between mazes.
 Returns: A list of lists which were split on 'splitters' (space), where each sublist represents the individual maze.
 '''
 def splitIntoSeparateMazes(iterable, splitters=""):
+        #Fast way to convert into list of lists
         return [list(g) for k, g in itertools.groupby(iterable, lambda x: x in splitters) if not k]
 
-'''
-Function: findStart
-Arguments: A maze list
-Returns: The x and y starting position in the maze
-'''
-def findStart(maze):
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
-            if maze[i][j] == 'S' or maze[i][j] == 's':
-                return [i,j]
-
-    print("Error: Did not find a starting position")
-    return None
-
 
 '''
-Function: findEnd
-Arguments: A maze list
-Returns: The x and y goal position in the maze
+Function: getFinalPathAsList
+Parameters: Grid object and path list of coordinates
+Returns: Modified maze in proper format with the path replaced from '_' to 'P'
 '''
-def findEnd(maze):
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
-            if maze[i][j] == 'G' or maze[i][j] == 'g':
-                return [i,j]
-
-    print("Error: Did not find a goal position")
-    return None
-
-
-'''
-Function: findWalls
-Arguments: A maze list
-Returns: The x and y positions of all the walls in the maze
-'''
-def findWalls(maze):
-    walls = []
-    for i in range(len(maze)):
-        for j in range(len(maze[0])):
-            if maze[i][j] == 'X' or maze[i][j] == 'x':
-                walls.append([i,j])
-    return walls
-
-def getFinalPathAsList(maze, startPos, endPos, pathList):
+def getFinalPathAsList(Grid, pathList):
+    #holds the path
     finalPath = []
-    for i in range(len(maze)):
+    #loop through the rows
+    for i in range(Grid.numRows):
+        #another list to hold each row
         path = []
-        for j in range(len(maze[0])):
-            if [i, j] == startPos:
+        #loop through the columns
+        for j in range(Grid.numCols):
+            #Check if the location is the start position, append S
+            if [i, j] == Grid.startPos:
                 path.append('S')
-            elif [i, j] == endPos:
+            #Check if the location is the end position, append G
+            elif [i, j] == Grid.endPos:
                 path.append('G')
+            #Check if the location is part of the path, append P
             elif (i, j) in pathList:
                 path.append('P')
+            #Append whatever was in the location in the original maze
             else:
-                path.append(maze[i][j])
+                path.append(Grid.maze[i][j])
+        #Append each row to the finalPath list
         finalPath.append(path)
+    #return the final path
     return finalPath
 
 
 def main():
+    #Read the maze file
     mazes = readMazeFromFile()
+
+    #Split each maze into its own list
     mazes = splitIntoSeparateMazes(mazes)
-    #print("List of lists of mazes: " + str(mazes))
 
-    #Loop through all the mazes
+    #Loop through all the mazes in the list of lists
     for maze in mazes:
-        #Create Astar object
-        Grid = AStar()
-
-        #Get the details of the maze
-        numRows = len(maze)
-        numCols = len(maze[0])
-        startPos = findStart(maze)
-        endPos = findEnd(maze)
-        walls = findWalls(maze)
+        #Create AStar4Directions object
+        Grid = AStar4Directions()
 
         #initialize the maze
-        Grid.initMaze(numCols,numRows,walls, startPos, endPos)
+        Grid.initMaze(maze)
 
         #solve the maze
         pathList = Grid.findBestPath()
-        finalPath = getFinalPathAsList(maze, startPos, endPos, pathList)
-        writeMazeToFile(numRows, finalPath)
-        #print the path
 
+        #Check if we found a path, if we did, get the updated maze
+        if pathList is not None:
+            #Get the maze with the path added in as 'P'
+            finalPath = getFinalPathAsList(Grid, pathList)
+
+        #We did not find a path, make it the original maze with no changes
+        else:
+            finalPath = maze
+
+        #Write the maze to a file
+        writeMazeToFile(Grid.numRows, finalPath)
+
+    return
 
 
 if __name__ == '__main__':
