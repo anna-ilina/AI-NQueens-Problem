@@ -45,11 +45,35 @@ def splitIntoSeparateMazes(iterable, splitters=""):
         return [list(g) for k, g in itertools.groupby(iterable, lambda x: x in splitters) if not k]
 
 
+def findStart(maze):
+    for i in range(len(maze)):
+        for j in range(len(maze[0])):
+            if maze[i][j] == "S" or maze[i][j] == 's':
+                return [i,j]
+
+    print("Error: Did not find a starting position")
+    return None
+
+def solveMaze(maze):
+    numRows = len(maze)
+    numCols = len(maze[0])
+    startPos = findStart(maze)
+
+    
+    return None
+
+
 def main():
     mazes = readMazeFromFile()
-    #print(mazes)
     mazes = splitIntoSeparateMazes(mazes)
-    print(mazes)
+    #print("List of lists of mazes: " + str(mazes))
+
+    #Get the number of mazes
+    numberOfMazes = len(mazes)
+
+    #Loop through all the mazes
+    for maze in mazes:
+        solvedPath = solveMaze(maze)
 
 if __name__ == '__main__':
     main()
