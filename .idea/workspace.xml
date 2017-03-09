@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="affca728-3c7a-4e35-9994-e7d4fad8d4df" name="Default" comment="" />
+    <list default="true" id="affca728-3c7a-4e35-9994-e7d4fad8d4df" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/A*PathFind/pathFind.py" afterPath="$PROJECT_DIR$/A*PathFind/pathFind.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/A*PathFind/pathfinding_a_out.txt" afterPath="$PROJECT_DIR$/A*PathFind/pathfinding_a_out.txt" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/A*PathFind/pathfinding_b_out.txt" afterPath="$PROJECT_DIR$/A*PathFind/pathfinding_b_out.txt" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -13,13 +17,16 @@
     <option name="PATCH_PATH" value="" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
+  <component name="FavoritesManager">
+    <favorites_list name="CISC-352-Assignment-3" />
+  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="pathFind.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/A*PathFind/pathFind.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="9632">
-              <caret line="602" column="0" lean-forward="true" selection-start-line="602" selection-start-column="0" selection-end-line="602" selection-end-column="0" />
+            <state relative-caret-position="390">
+              <caret line="330" column="34" lean-forward="true" selection-start-line="330" selection-start-column="34" selection-end-line="330" selection-end-column="34" />
               <folding>
                 <element signature="e#83#99#0" expanded="true" />
               </folding>
@@ -30,7 +37,7 @@
       <file leaf-file-name="pathfinding_b.txt" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/A*PathFind/pathfinding_b.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="448">
+            <state relative-caret-position="420">
               <caret line="28" column="10" lean-forward="false" selection-start-line="28" selection-start-column="10" selection-end-line="28" selection-end-column="10" />
               <folding />
             </state>
@@ -40,7 +47,7 @@
       <file leaf-file-name="pathfinding_a.txt" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/A*PathFind/pathfinding_a.txt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="349">
+            <state relative-caret-position="0">
               <caret line="30" column="0" lean-forward="false" selection-start-line="30" selection-start-column="0" selection-end-line="38" selection-end-column="10" />
               <folding />
             </state>
@@ -70,10 +77,12 @@
     <findStrings>
       <find>AStar</find>
       <find>manhattanDistanceHeuristic</find>
+      <find>DistanceHeuristic</find>
     </findStrings>
     <replaceStrings>
       <replace>AStar4Directions</replace>
       <replace>DistanceHeuristic</replace>
+      <replace>distanceHeuristic</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -84,9 +93,9 @@
       <list>
         <option value="$PROJECT_DIR$/A*PathFind/test.py" />
         <option value="$PROJECT_DIR$/A*PathFind/pathfinding.txt" />
-        <option value="$PROJECT_DIR$/A*PathFind/pathFind.py" />
         <option value="$PROJECT_DIR$/A*PathFind/pathfinding_a.txt" />
         <option value="$PROJECT_DIR$/A*PathFind/pathfinding_b.txt" />
+        <option value="$PROJECT_DIR$/A*PathFind/pathFind.py" />
       </list>
     </option>
   </component>
@@ -180,7 +189,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="Errors" />
+    <property name="settings.editor.selected.configurable" value="reference.settingsdialog.IDE.editor.colors" />
   </component>
   <component name="PyConsoleOptionsProvider">
     <option name="myPythonConsoleState">
@@ -408,7 +417,7 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="724" extended-state="6" />
-    <editor active="false" />
+    <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24861" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296355" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -416,7 +425,7 @@
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3296355" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3280507" sideWeight="0.4940429" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.18829113" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2494043" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.340729" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -491,7 +500,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/A*PathFind/pathfinding_a.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="349">
+        <state relative-caret-position="0">
           <caret line="30" column="0" lean-forward="false" selection-start-line="30" selection-start-column="0" selection-end-line="38" selection-end-column="10" />
           <folding />
         </state>
@@ -499,7 +508,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/A*PathFind/pathfinding_b.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="448">
+        <state relative-caret-position="420">
           <caret line="28" column="10" lean-forward="false" selection-start-line="28" selection-start-column="10" selection-end-line="28" selection-end-column="10" />
           <folding />
         </state>
@@ -507,8 +516,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/A*PathFind/pathFind.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="9632">
-          <caret line="602" column="0" lean-forward="true" selection-start-line="602" selection-start-column="0" selection-end-line="602" selection-end-column="0" />
+        <state relative-caret-position="390">
+          <caret line="330" column="34" lean-forward="true" selection-start-line="330" selection-start-column="34" selection-end-line="330" selection-end-column="34" />
           <folding>
             <element signature="e#83#99#0" expanded="true" />
           </folding>
