@@ -152,11 +152,11 @@ class AStar4Directions(object):
 
 
     '''
-    Function DistanceHeuristic
+    Function distanceHeuristic
     Parameters: Cell of current position
     Returns: The manhattan distance (exact value in this case) to the goal from the cell
     '''
-    def DistanceHeuristic(self, cell):
+    def distanceHeuristic(self, cell):
         #Manhattan distance is the distance from the current cell to the goal cell
         return abs(cell.x - self.end.x) + abs(cell.y - self.end.y)
 
@@ -194,7 +194,7 @@ class AStar4Directions(object):
         #Add one to Gn because we moved 1 cell in some direction
         neighbour.g = cell.g + 1
         #Get the manhattan distance for the new cell
-        neighbour.h = self.DistanceHeuristic(neighbour)
+        neighbour.h = self.distanceHeuristic(neighbour)
         #Calculate its Fn
         neighbour.f = neighbour.h + neighbour.g
         #Set the parent to the current cell
@@ -293,7 +293,7 @@ class Greedy4Directions(AStar4Directions):
         # We need to keep Gn here because functions in AStar4Directions use it
         neighbour.g = 0
         # Get the manhattan distance for the new cell
-        neighbour.h = self.DistanceHeuristic(neighbour)
+        neighbour.h = self.distanceHeuristic(neighbour)
         # Calculate its Fn
         neighbour.f = neighbour.h + neighbour.g
         # Set the parent to the current cell
@@ -305,17 +305,17 @@ class Greedy4Directions(AStar4Directions):
 # ****************************************************************************#
 '''
 Class AStar5Directions extends AStar4Directions
-It overrides the DistanceHeuristic function from manhattan to chebyshev, and also
+It overrides the distanceHeuristic function from manhattan to chebyshev, and also
 overrides the findNeighbours function to allow for diagonals
 '''
 class AStar5Directions(AStar4Directions):
     '''Override Functions'''
     '''
-        Function DistanceHeuristic
+        Function distanceHeuristic
         Parameters: Cell of current position
         Returns: The Chebyshev distance (exact value in this case) to the goal from the cell
         '''
-    def DistanceHeuristic(self, cell):
+    def distanceHeuristic(self, cell):
         # Chebyshev distance looks at all possible neighbours and takes max so we overestimate
         return max(abs(cell.x - self.end.x),abs(cell.y - self.end.y))
 
@@ -376,7 +376,7 @@ class Greedy5Directions(AStar5Directions):
         # We need to keep Gn here because functions in AStar4Directions use it
         neighbour.g = 0
         # Get the manhattan distance for the new cell
-        neighbour.h = self.DistanceHeuristic(neighbour)
+        neighbour.h = self.distanceHeuristic(neighbour)
         # Calculate its Fn
         neighbour.f = neighbour.h + neighbour.g
         # Set the parent to the current cell
