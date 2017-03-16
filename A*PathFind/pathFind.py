@@ -75,8 +75,8 @@ class AStar4Directions(object):
         walls = self.findWalls()
 
         #Loop through, determine if wall or not and set reachable
-        for i in range(self.numCols):
-            for j in range(self.numRows):
+        for i in range(self.numRows):
+            for j in range(self.numCols):
                 if [i,j] in walls:
                     reachable = False
                 else:
@@ -86,6 +86,7 @@ class AStar4Directions(object):
 
         #Convert the start and end positions to the location in the cells list
         self.start = self.getCellAtLocation(self.startPos[0], self.startPos[1])
+        #print(self.start)
         self.end = self.getCellAtLocation(self.endPos[0], self.endPos[1])
 
 
@@ -148,7 +149,7 @@ class AStar4Directions(object):
         #returns the cell in the cell list.
         #The location of each row will be the row it is in * the total number of rows
         #We add the column value to get the specific cell
-        return self.cells[row*self.numRows + col]
+        return self.cells[row*self.numCols+ col]
 
 
     '''
@@ -158,7 +159,7 @@ class AStar4Directions(object):
     '''
     def distanceHeuristic(self, cell):
         #Manhattan distance is the distance from the current cell to the goal cell
-        return abs(cell.x - self.end.x) + abs(cell.y - self.end.y)
+        return (abs(cell.x - self.end.x) + abs(cell.y - self.end.y))
 
 
     '''
@@ -170,7 +171,7 @@ class AStar4Directions(object):
         #holds the neighbours of the cell
         neighbours = []
         #Get the one to the right
-        if cell.x < self.numCols - 1:
+        if cell.x < self.numRows-1 :
             neighbours.append(self.getCellAtLocation(cell.x+1, cell.y))
         #Get the one above
         if cell.y > 0:
@@ -179,8 +180,9 @@ class AStar4Directions(object):
         if cell.x > 0:
             neighbours.append(self.getCellAtLocation(cell.x-1,cell.y))
         #Get the one below
-        if cell.y < self.numRows-1:
+        if cell.y < self.numCols-1:
             neighbours.append(self.getCellAtLocation(cell.x, cell.y+1))
+
         return neighbours
 
 
@@ -240,7 +242,6 @@ class AStar4Directions(object):
         while len(self.goto) != 0:
             #Pop the first thing in the heapq
             fVal, cell = heapq.heappop(self.goto)
-
             #add it to the visited list
             self.visited.add(cell)
 
@@ -250,22 +251,26 @@ class AStar4Directions(object):
 
             #It was not a goal
             else:
+                
                 #Get the neighbours
                 neighbours = self.findNeighbours(cell)
-
+                
                 #Loop through the neighbours list
                 for neighbour in neighbours:
+                    
                     #If we can get to it and it hasn't already been visited
                     if neighbour not in self.visited and neighbour.reachable == True:
                         #Check if it is currently in the heapq
                         if (neighbour.f, neighbour) in self.goto:
                             #Check if the new path is better
+
                             if neighbour.g > cell.g + 1:
                                 #update it
                                 self.calculateF(neighbour, cell)
                         else:
                             #If it was not better, calculate the F(node) and push it to our heapq
                             self.calculateF(neighbour, cell)
+
                             heapq.heappush(self.goto, (neighbour.f, neighbour))
         #we did not find a path
         return None
@@ -295,7 +300,7 @@ class Greedy4Directions(AStar4Directions):
         # Get the manhattan distance for the new cell
         neighbour.h = self.distanceHeuristic(neighbour)
         # Calculate its Fn
-        neighbour.f = neighbour.h + neighbour.g
+        neighbour.f = neighbour.h
         # Set the parent to the current cell
         neighbour.parent = cell
 
@@ -326,31 +331,32 @@ class AStar5Directions(AStar4Directions):
     Returns: List of all neighbours of the cell
     '''
     def findNeighbours(self, cell):
-        # holds the neighbours of the cell
+        #holds the neighbours of the cell
         neighbours = []
-        # Get the one to the right
-        if cell.x < self.numCols - 1:
-            neighbours.append(self.getCellAtLocation(cell.x + 1, cell.y))
-        # Get the one above
+        #Get the one to the right
+        if cell.x < self.numRows-1 :
+            neighbours.append(self.getCellAtLocation(cell.x+1, cell.y))
+        #Get the one above
         if cell.y > 0:
-            neighbours.append(self.getCellAtLocation(cell.x, cell.y - 1))
-        # Get the one to the left
+            neighbours.append(self.getCellAtLocation(cell.x, cell.y-1))
+        #Get the one to the left
         if cell.x > 0:
-            neighbours.append(self.getCellAtLocation(cell.x - 1, cell.y))
-        # Get the one below
-        if cell.y < self.numRows - 1:
-            neighbours.append(self.getCellAtLocation(cell.x, cell.y + 1))
+            neighbours.append(self.getCellAtLocation(cell.x-1,cell.y))
+        #Get the one below
+        if cell.y < self.numCols-1:
+            neighbours.append(self.getCellAtLocation(cell.x, cell.y+1))
+            
         #Below, right
-        if cell.x < self.numCols -1 and cell.y < self.numRows -1:
+        if cell.x < self.numRows -1 and cell.y < self.numCols -1:
             neighbours.append(self.getCellAtLocation(cell.x+1, cell.y+1))
         #Above Right
-        if cell.x < self.numCols - 1 and cell.y > 0:
+        if cell.x < self.numRows - 1 and cell.y > 0:
             neighbours.append(self.getCellAtLocation(cell.x + 1, cell.y - 1))
         #Above Left
         if cell.x > 0 and cell.y > 0:
             neighbours.append(self.getCellAtLocation(cell.x-1, cell.y-1))
         #Below Left
-        if cell.x > 0 and cell.y < self.numRows-1:
+        if cell.x > 0 and cell.y < self.numCols-1:
             neighbours.append(self.getCellAtLocation(cell.x-1, cell.y+1))
         return neighbours
 
