@@ -1,19 +1,23 @@
 #import numpy as np
 import random
-import sys
+# import sys
+import time
 
 MAX_SIZE_FOR_GRID_OUTPUT = 256
-MAX_MOVES_BEFORE_RESTART = 1000
+MAX_MOVES_BEFORE_RESTART = 5000
+MAX_RESTARTS_ALLOWED = 1000
 
 #boardSizes = [4,32,64,125,256]
 #boardSizes = 4
+
+#INSTEAD OF MOVING A CONFLICTING QUEEN RANDOMLY, COULD STORE NUMBER IT CONFLICTS WITH AND MOVE THE QUEEN WITH MOST CONFLICTS? MAYBE?
 
 #read input from nqueens.txt, line by line
 def readBoardSizesFromFile(filename):
   #read input from nqueens.txt, line by line
   #each line is an integer specifying board size (number of queens)
   # return [4, 32, 64, 125, 256]
-  return [2000]
+  return [1000]
 
 def displayBoardToConsole(size, board_0_based):
   #if n < 256, do visual form and 1-based matrix with queen locations, by row
@@ -83,17 +87,24 @@ def updateQueensInConflict(size, board, queensInConflict, queensInCol, queensInD
   return queensInConflict
 
 # returns the column within a row which would cause fewest conflicts if a queen were put there, updates queensInConflict array
-def minConflictsWithinRow(size, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row):
+def minConflictsWithinRow(size, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row, oldColPosition):
   conflictsByColumn = [0] * size
   col = 0
 
+
+  # if parameter "oldColPosition" is None, then there are no columns that are offlimit
+
   #check each col position in the row and count number of conflicts that would result from placing a queen there
   while col < size:
-    numConflicts = queensInCol[col] + queensInDiagonalFromTopRight[row + col] + queensInDiagonalFromTopLeft[row + size - col - 1]
-    if numConflicts == 0:
-      break
+
+    if col == oldColPosition:
+      conflictsByColumn[col] = size + 1 # set it to this so the old (off limits) column is never chosen
     else:
-      conflictsByColumn[col] = numConflicts
+      numConflicts = queensInCol[col] + queensInDiagonalFromTopRight[row + col] + queensInDiagonalFromTopLeft[row + size - col - 1]
+      if numConflicts == 0:
+        break
+      else:
+        conflictsByColumn[col] = numConflicts
     col += 1
 
   if col == size:
@@ -137,7 +148,7 @@ def generateInitialBoard(size):
     # otherwise, keep going for the whole column then choose a min index of the column
 
     [queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row, col] = \
-      minConflictsWithinRow(size, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row)
+      minConflictsWithinRow(size, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row, None)
 
     board[row] = col
     queensInCol[col] += 1
@@ -146,7 +157,30 @@ def generateInitialBoard(size):
 
     queensInConflict = updateQueensInConflict(size, board, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft)
 
+
   return [board, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft]
+
+
+def removeQueensNoLongerInConflict(size, board, queensInConflict, queensInCol, queensInDiagonalFromTopLeft, queensInDiagonalFromTopRight):
+
+  queensNoLongerInConflict = []
+
+  # iterative through all the queens in "queensInConflict" and note the ones that are no longer in conflict
+  for i in range(len(queensInConflict)):
+    [row, col] = queensInConflict[i]
+
+    numConflicts = queensInCol[col] + queensInDiagonalFromTopRight[row + col] \
+                   + queensInDiagonalFromTopLeft[row + size - col - 1] - 3 #subtract 3 for queen you just removed
+
+    if numConflicts == 0:
+      queensNoLongerInConflict.append([row, col])
+
+  # remove the queens that are no longer in conflict
+  for i in range(len(queensNoLongerInConflict)):
+    queensInConflict.remove(queensNoLongerInConflict[i])
+
+
+  return queensInConflict
 
 
 def solveWithIterativeRepair(size, board, queensInConflict, queensInCol, queensInDiagonalFromTopLeft, queensInDiagonalFromTopRight):
@@ -154,20 +188,33 @@ def solveWithIterativeRepair(size, board, queensInConflict, queensInCol, queensI
   numMoves = 0
   #numQueensInConflict = len(queensInConflict)
 
+  lastQueenMoved = [] # keep track of last queen moved so you don't accidentally randomly choose to move the same queen twice
+
   while (len(queensInConflict) > 0 and numMoves < MAX_MOVES_BEFORE_RESTART):
+    #displayBoardToConsole(size, board)
     print ("number of queens in conflict: " + str(len(queensInConflict)))
-    #print(str(queensInConflict))
-    #print ("I'm a queue!")
+    print(str(queensInConflict))
     #[row, oldColPosition] = random.choice(queensInConflict)
+
+
     [row, oldColPosition] = queensInConflict[random.randint(0, len(queensInConflict) -1)]
+
+    # if queen randomly chosen is the queen that was moved in the last move, pick another random queen.
+    # since it would be redundant to move the same queen twice in a row
+    while ([row, oldColPosition] == lastQueenMoved):
+      print ("trying to fix queen in conflict at " + str([row, oldColPosition]))
+      print ("choose new queen; this one was moved last time")
+      [row, oldColPosition] = queensInConflict[random.randint(0, len(queensInConflict) - 1)]
+
     queensInConflict.remove([row, oldColPosition])
+    print ("trying to fix queen in conflict at " + str([row, oldColPosition]))
     #numQueensInConflict -= 1
 
     #check that the queen is still in conflict (conflict may have been result by previous queens moved)
     numConflicts = queensInCol[oldColPosition] + queensInDiagonalFromTopRight[row + oldColPosition] \
                    + queensInDiagonalFromTopLeft[row + size - oldColPosition - 1] - 3 #subtract 3 for queen you just removed
 
-
+    print ("this queen has " + str(numConflicts) + " conflicts")
     if numConflicts > 0:
       # remove conflicting queen; update counters for number of queens in each col and diagonal
       queensInCol[oldColPosition] -= 1
@@ -176,7 +223,9 @@ def solveWithIterativeRepair(size, board, queensInConflict, queensInCol, queensI
 
       # find which col you could move it to that would have least conflicts
       [queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row, newColPosition] = \
-        minConflictsWithinRow(size, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row)
+        minConflictsWithinRow(size, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, row, oldColPosition)
+
+      print ("best (min conflict) place to move it is " + str([row, newColPosition]))
 
       #place queen at new column with the row; update board, and update counters for number of queens in each col and diagonal
       board [row] = newColPosition
@@ -192,8 +241,16 @@ def solveWithIterativeRepair(size, board, queensInConflict, queensInCol, queensI
       #     queensInConflict.append([row, newColPosition])
 
       queensInConflict = updateQueensInConflict(size, board, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft)
+      queensInConflict = removeQueensNoLongerInConflict(size, board, queensInConflict, queensInCol, queensInDiagonalFromTopLeft, queensInDiagonalFromTopRight)
+
+
+      lastQueenMoved = [row, newColPosition]
+
+    else:
+      print("chosen queen is no longer in conflict")
 
     numMoves += 1
+    print ("move # " + str(numMoves))
 
 
   if numMoves == MAX_MOVES_BEFORE_RESTART:
@@ -203,31 +260,59 @@ def solveWithIterativeRepair(size, board, queensInConflict, queensInCol, queensI
 
   return board
 
+def checkThatBoardHasNoConflicts(board):
+
+  # check that no row contains > 1 queen
+
+
+  # check that no col contains > 1 queen
+
+  # check that no diagonal contains > 1 queen
+
+
+  return
+
+
 def main():
   inFileName = "nqueens.txt"
   outFileName = "nqueens_out.txt"
   boardSizes = readBoardSizesFromFile(inFileName)
 
   for size in boardSizes:
-    # generate initial board (one queen per column, queens positioned to minimize number of conflicts as the board is created)
-    [initialBoard, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft] = generateInitialBoard(size)
-    displayBoardToConsole(size, initialBoard)
-    writeBoardToFile(size, initialBoard, outFileName)
-    print ("initially..." + str(queensInConflict))
+    startTime = time.time()
+    # # generate initial board (one queen per column, queens positioned to minimize number of conflicts as the board is created)
+    # [initialBoard, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft] = generateInitialBoard(size)
+    # #displayBoardToConsole(size, initialBoard)
+    # writeBoardToFile(size, initialBoard, outFileName)
+    # print ("initially..." + str(queensInConflict))
 
     print ("repairing to get final board...")
     # fix the n-queens board using iterative repair
     finalBoard = False
     numRestarts = -1
-    while finalBoard == False:
+    while finalBoard == False: # REMOVE THE CONDITION ON MAX MOVES LATER
       numRestarts += 1
-      print ("try")
+
+      # generate initial board (one queen per column, queens positioned to minimize number of conflicts as the board is created)
+      [initialBoard, queensInConflict, queensInCol, queensInDiagonalFromTopRight,
+       queensInDiagonalFromTopLeft] = generateInitialBoard(size)
+      # displayBoardToConsole(size, initialBoard)
+      #writeBoardToFile(size, initialBoard, outFileName)
+      print ("initially..." + str(queensInConflict))
+
       # [initialBoard, queensInConflict, queensInCol, queensInDiagonalFromTopRight, queensInDiagonalFromTopLeft, finalBoard] \
       #   = solveWithIterativeRepair(size, initialBoard, queensInConflict, queensInCol, queensInDiagonalFromTopLeft, queensInDiagonalFromTopRight)
       finalBoard = solveWithIterativeRepair(size, initialBoard, queensInConflict, queensInCol, queensInDiagonalFromTopLeft, queensInDiagonalFromTopRight)
 
+      if numRestarts == MAX_RESTARTS_ALLOWED: #  PROBABLY REMOVE THIS WHEN
+        print ("Hit " + str(MAX_RESTARTS_ALLOWED) + " restarts, will stop now.")
+        break
+
+    writeBoardToFile(size, initialBoard, outFileName)
     displayBoardToConsole(size, finalBoard)
     print ("num restarts: " + str(numRestarts))
+    elapsedTime = time.time() - startTime
+    print ("elapsed time: " + str(elapsedTime))
 
 
   return
