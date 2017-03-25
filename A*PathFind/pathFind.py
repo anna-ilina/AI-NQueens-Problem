@@ -345,7 +345,7 @@ class AStar5Directions(AStar4Directions):
         #Get the one below
         if cell.y < self.numCols-1:
             neighbours.append(self.getCellAtLocation(cell.x, cell.y+1))
-            
+
         #Below, right
         if cell.x < self.numRows -1 and cell.y < self.numCols -1:
             neighbours.append(self.getCellAtLocation(cell.x+1, cell.y+1))
